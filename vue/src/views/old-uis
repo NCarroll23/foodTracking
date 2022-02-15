@@ -1,0 +1,1098 @@
+=======Old login======
+
+<template>
+  <div id="login" class="text-center">
+   
+  
+    <div class="topnav-login">
+      <router-link v-bind:to="'/'" id="nav-link">Home</router-link>
+      <router-link v-bind:to="'/contact'" id="nav-link">Contact</router-link>
+      <router-link v-bind:to="'/register'" id="nav-link">Register</router-link>
+      <router-link v-bind:to="'/aboutUs'" id="nav-link">About Us</router-link>
+    </div>
+    <form class="form-signin" @submit.prevent="login">
+      <h1>Welcome To NutriBud</h1>
+      <h1 class="h3 mb-3 font-weight-normal" id = "login-title">Please Sign In</h1>
+      <div
+        class="alert alert-danger"
+        role="alert"
+        v-if="invalidCredentials"
+      >Invalid username and password!</div>
+      <div
+        class="alert alert-success"
+        role="alert"
+        v-if="this.$route.query.registration"
+      >Thank you for registering, please sign in.</div>
+      <label for="username" class="sr-only">Username</label>
+      <input
+        type="text"
+        id="username"
+        class="form-control"
+        placeholder="Username"
+        v-model="user.username"
+        required
+        autofocus
+      />
+      <label for="password" class="sr-only">Password</label>
+      <input
+        type="password"
+        id="password"
+        class="form-control"
+        placeholder="Password"
+        v-model="user.password"
+        required
+      />
+      <router-link :to="{ name: 'register' }" class="rt-link">Need an account?</router-link>
+      <button id = "btn" type="submit">Sign in</button>
+    </form>
+  </div>
+</template>
+
+<script>
+import authService from "../services/AuthService";
+import serverService from "../services/ServerService";
+export default {
+  name: "login",
+  components: {},
+  data() {
+    return {
+      user: {
+        username: "",
+        password: ""
+      },
+      userId: "",
+      invalidCredentials: false
+    };
+  },
+  methods: {
+    login() {
+
+      authService
+        .login(this.user)
+        .then(response => {
+          if (response.status == 200 ) {
+            this.$store.commit("SET_AUTH_TOKEN", response.data.token);
+            this.$store.commit("SET_USER", response.data.user);
+            this.route();
+            this.$router.push('/'); 
+
+          }
+        })
+        .catch(error => {
+          const response = error.response;
+
+          if (response.status === 401) {
+            this.invalidCredentials = true;
+          }
+        });
+    },
+    route(){
+      console.log('route')
+        serverService.getIdByUsername(this.user.username).then((response)=>{
+              this.userId = parseInt(response.data);
+              console.log(this.userId);
+           
+            serverService.getProfile(this.userId).then((response)=> {
+              if(response.data.userId === 0){
+              this.$router.push(`/createprofile/${this.user.username}`);
+              }
+            });
+             })
+    }
+  }
+  
+};
+</script>
+
+<style scoped>
+
+#login-title{
+    font-family: 'Dosis', sans-serif;
+}
+
+
+.form-signin{
+  /* width: 100%; */
+  /* position: fixed; */
+  margin-top: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  align-items: center;
+  align-self: center; 
+  background-image: url("C:/Users/Student/workspace/final-capstone-tech-fitness-blue/vue/src/Assets/register-bg-light.png");
+  background-repeat: no-repeat;;
+  background-position: center;
+  font-family: 'Dosis', sans-serif;
+  background-size:contain;
+  padding: 50px;
+  animation-name: slidein;
+  animation-duration: 1s;
+
+  
+}
+
+@keyframes slidein {
+  from {
+    margin-left: 100%;
+    width: 300%;
+  }
+
+  to {
+    margin-left: 0%;
+    width: 100%;
+  }
+}
+
+a:hover {
+  transform: scale(1.1); 
+}
+
+#btn:hover {
+  transform: scale(1.1); 
+}
+
+#nav-link{
+  font-weight: bold;
+  color:black;
+}
+
+.form-control{
+  background: transparent;
+  border-width: 0px;
+  text-align: center;
+  font-family: 'Dosis', sans-serif;
+  font-size: 30px;
+  text-decoration: underline;
+ 
+
+}
+
+.topnav-login{
+  width: 100%;
+
+  display: flex;
+  justify-content: space-evenly;
+  background-color: rgb(110,236,100);
+  font-family: 'Dosis', sans-serif;
+  font-size: 20px;
+  padding: 20px;
+  margin-left: -10px;
+  margin-top: -10px;
+
+}
+
+/* .form-control{
+  text-align: center;
+} */
+
+.rt-link{
+  padding: 10px;
+}
+.sr-only{
+  color: transparent;
+  border: none;
+  padding-top: 10px;
+  font-family: 'Dosis', sans-serif;
+  
+}
+
+
+#btn{
+  padding: 10px;
+  background-color:rgb(5,88,37, 0.4) ;
+  border-radius: 10px;
+  border: rgb(110,236,100)  ;
+  font-family: 'Dosis', sans-serif;
+  font-weight: bold;
+}
+
+</style>
+
+=====Old Register ======
+
+
+<template >
+
+  <div class="background-register">
+  <video autoplay loop src="./food2.mp4" id = "bg-video"></video>
+  <div id="register" class="text-center">
+  
+    <div class="topnav">
+      <router-link v-bind:to="'/'" id="nav-link">Home</router-link>
+      <router-link v-bind:to="'/login'" id="nav-link">Login</router-link>
+      <router-link v-bind:to="'/aboutUs'" id="nav-link">About Us</router-link>
+    </div>
+    <form class="form-register" @submit.prevent="register">
+      <br/>
+      <h1 class="h3 mb-3 font-weight-normal" id="create-acount-header">Create Account</h1>
+      <div class="alert alert-danger" role="alert" v-if="registrationErrors">
+        {{ registrationErrorMsg }}
+      </div>
+      <label for="username" class="sr-only">    Username     </label>
+      <input
+        type="text"
+        id="username"
+        class="form-control"
+        placeholder="Username              "
+        v-model="user.username"
+        required
+        autofocus
+      />
+
+      <input
+        type="password"
+        id="password"
+        class="form-control"
+        placeholder="Password                "
+        v-model="user.password"
+        required
+      />
+      <input
+        type="password"
+        id="confirmPassword"
+        class="form-control"
+        placeholder="Confirm Password"
+        v-model="user.confirmPassword"
+        required
+      />
+      
+      <router-link :to="{ name: 'login' }" class="rt-link">Have an account?</router-link>
+      <button class="btn btn-lg btn-primary btn-block" id="btn" type="submit">
+        Create Account
+      </button>
+      <br/><br/><br/><br/><br/>
+    </form>
+  </div>
+  </div>
+</template>
+
+<script>
+import authService from '../services/AuthService';
+
+export default {
+  name: 'register',
+  data() {
+    return {
+      user: {
+        username: '',
+        password: '',
+        confirmPassword: '',
+        role: 'user',
+      },
+      registrationErrors: false,
+      registrationErrorMsg: 'There were problems registering this user.',
+    };
+  },
+  methods: {
+    register() {
+      if (this.user.password != this.user.confirmPassword) {
+        this.registrationErrors = true;
+        this.registrationErrorMsg = 'Password & Confirm Password do not match.';
+      } else {
+        authService
+          .register(this.user)
+          .then((response) => {
+            if (response.status == 201) {
+              this.$router.push({
+                path: '/login',
+                query: { registration: 'success' },
+              });
+            }
+          })
+          .catch((error) => {
+            const response = error.response;
+            this.registrationErrors = true;
+            if (response.status === 400) {
+              this.registrationErrorMsg = 'Bad Request: Validation Errors';
+            }
+          });
+      }
+    },
+    clearErrors() {
+      this.registrationErrors = false;
+      this.registrationErrorMsg = 'There were problems registering this user.';
+    },
+  },
+};
+</script>
+
+<style scoped>
+
+
+/* main-color: rgb(110,236,100) */
+
+body{
+  /* background-color:rgba(0, 0, 0) ; */
+
+  
+
+}
+
+#nav-link{
+  font-weight: bold;
+}
+
+#bg-video{
+  
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  min-width: 100%;
+  min-height: 100%;
+}
+.form-register{
+  
+  width: 100%;
+  position: fixed;
+  margin-top: 100px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  align-items: center;
+  align-self: center; 
+  background-image: url("C:/Users/Student/workspace/final-capstone-tech-fitness-blue/vue/src/Assets/register-bg-light.png");
+  background-repeat: no-repeat;
+  background-position: center; 
+  background-size:contain;
+  font-family: 'Dosis', sans-serif;
+  animation-name: slidein;
+  animation-duration: 1s;
+
+}
+
+
+
+
+.form-control{
+  background: transparent;
+  border-width: 0px;
+  text-align: center;
+  font-family: 'Dosis', sans-serif;
+  font-size: 30px;
+  text-decoration: underline;
+ 
+
+}
+
+
+a{
+  text-decoration: bold;
+}
+
+a:hover {
+  transform: scale(1.1); 
+}
+
+#btn:hover{
+  transform: scale(1.1); 
+}
+
+
+.sr-only{
+  color: transparent;
+  border: none;
+  padding-top: 10px;
+  font-family: 'Dosis', sans-serif;
+  
+}
+
+.rt-link{
+  padding: 10px;
+}
+
+
+/* .router-link-active{
+  background-color: rgb(110,236,100) ;
+  padding: 50px;
+} */
+
+#btn{
+  padding: 10px;
+  background-color:rgb(5,88,37, 0.4) ;
+  border-radius: 10px;
+  border: rgb(110,236,100)  ;
+  font-family: 'Dosis', sans-serif;
+  font-weight: bold;
+}
+
+
+@keyframes slidein {
+  from {
+    margin-left: -100%;
+    width: 100%;
+  }
+
+  to {
+    margin-left: 0%;
+    width: 100%;
+  }
+}
+
+a{
+  color: black;
+}
+
+.topnav{
+  width: 100%;
+  position: fixed;
+  display: flex;
+  justify-content: space-evenly;
+  text-align: center;
+  align-items: center;
+  background-color: rgb(110,236,100);
+  font-family: 'Dosis', sans-serif;
+  font-size: 20px;
+  padding: 20px;
+  margin-left: -10px;
+  margin-top: -10px;
+
+  text-decoration: bold;
+
+}
+
+
+
+</style>
+
+
+======OLD CREATE=======
+<template>
+  <div class="create-user-profilee">
+    <!-- <div class="topnav-createprofile">
+      <a class="active" href="#home">Home</a>
+      <a href="#contact">Contact</a>
+      <a href="#about">About</a>
+    </div> -->
+    {{profile}}
+    <div>
+      <form class="form-create-profile" v-on:submit.prevent="createProfile">
+        <h1>Hello, welcome to App!</h1>
+        <h2> Tell us about yourself</h2>
+
+        
+        <label>
+          First Name
+          <input
+            type="text"
+            id="firstname"
+            class="form-control-create"
+            placeholder="First Name"
+            v-model="profile.firstName"
+          />
+        </label>
+
+        <label>
+          Last Name
+          <input
+            type="text"
+            id="lastName"
+            class="form-control-create"
+            placeholder="Last Name"
+            v-model="profile.lastName"
+          />
+        </label>
+
+        <label>
+          Age
+          <input
+            type="age"
+            id="age"
+            class="form-control-create"
+            placeholder="age"
+            v-model="profile.age"
+          />
+        </label>
+
+        <label>
+          Birthday
+        <input
+          type="date"
+          id="birthday"
+          class="form-control-create"
+          placeholder="Birthday"
+          v-model="birthdayStr"
+        />
+        </label>
+        <label>
+          Height
+          <input
+            type="height"
+            id="height"
+            class="form-control-create"
+            placeholder="height"
+            v-model="profile.height"
+          />
+        </label>
+
+        <label>
+          Current Weight
+          <input
+            type="current-weight"
+            id="current-weight"
+            class="form-control-create"
+            placeholder="current-weight"
+            v-model="profile.currentWeight"
+          />
+        </label>
+
+        <label>
+          Desired Weight
+          <input
+            type="desired-weight"
+            id="desired-weight"
+            class="form-control-create"
+            placeholder="desired-weight"
+            v-model="profile.desiredWeight"
+          />
+        </label>
+
+        <label>
+          Display Name
+          <input
+            type="display-name"
+            id="display-name"
+            class="form-control-create"
+            placeholder="display name"
+            v-model="profile.displayName"
+          />
+        </label>
+        <label>
+          Calorie Goal
+          <input
+            type="calorie-goal"
+            id="calorie-goal"
+            class="form-control-create"
+            placeholder="calorie-goal"
+            v-model="profile.calorieGoal"
+          />
+        </label>
+        <label>
+          Meals Per Day
+          <input
+            type="meals-per-day"
+            id="meals-per-day"
+            class="form-control-create"
+            placeholder="meals-per-day"
+            v-model="profile.mealsPerDay"
+          />
+        </label>
+         
+        <label>
+          <div id='add_image'>
+          Upload a Profile Picture
+           <input
+            type="text"
+            id="image_input"
+            title=" "
+            accept="image/png, image/jpg"
+            placeholder="URL will be here"
+            v-on:submit.prevent="addPicture"
+            class="update-item"
+          />
+
+          <button v-on:click.prevent="addPicture">Select Picture</button>
+          </div>
+        </label>
+        <button type="submit" class="btn">Submit</button>
+         <img :src = "this.profile.fileData" class = "user-profile-pic"/>
+      </form>
+    </div>
+  </div>
+</template>
+<script>
+import serverService from "../services/ServerService.js";
+export default {
+  name: 'create',
+  data() {
+
+      return {
+        // profilePicture: '',
+        profile: {
+            firstName: '',
+            lastName: '',
+            age: '',
+            birthday: [],
+            height: '',
+            currentWeight: '',
+            desiredWeight: '',
+            displayName: '',
+            calorieGoal: '',
+            mealsPerDay:'',
+            fileData: ''
+        },
+
+        birthdayStr: ''
+        
+      };
+      
+
+  },
+  methods: {
+      createProfile(){
+          
+          this.profile.birthday = this.birthdayStr.split('-').map(Number)
+          console.log(this.profile.birthday)
+        //   this.profile.birthday = this.profile.birthday.forEach((value) =>{
+        //         value.parseInt;
+        //   })
+          
+          console.log(this.profile.birthday)
+
+          serverService.createProfile(this.profile).then((response) => {
+            if (response.status == 200) {
+              this.$router.push({
+                path: '/',
+                query: { registration: 'success' },
+              });
+            }
+          })
+      },
+    selectPictureFile() {
+      document.getElementById("profilepic").click();
+    },
+    addPicture(){
+       window.cloudinary.setCloudName("dnaht9yyh");
+
+      var widget = new window.cloudinary.createUploadWidget(
+        {
+          cloudName: "dnaht9yyh",
+          uploadPreset: "ml_default",
+        },
+        (error, result) => {
+          if (!error) {
+            if (result.event === 'queues-end') {
+                console.log(result.data.info);
+
+              // console.log(result.data.info.files[0].uploadInfo.url);
+              this.profile.fileData = result.data.info.files[0].uploadInfo.url;
+              // if(this.profile.fileData = ''){
+              //   this.profile.fileData = 'https://i.pinimg.com/564x/83/9a/08/839a0809148a30d5ac5a835dd90cb79f.jpg';
+              // }
+            } 
+           
+          }
+        }
+      );
+      widget.open();
+    }
+
+  }
+    
+}
+</script>
+<style scoped>
+
+
+.user-profile-pic{
+  display: right;
+  width: 25%;
+  justify-content: right;
+  margin-left: 5%;
+  border-radius: 50%;
+  border:5px solid #055825;
+  margin-left: 20%;
+  margin-bottom: 20%;
+}
+
+
+
+.form-create-profile{
+  /* width: 100%; */
+  /* position: fixed; */
+  size: 80%;
+  display: grid;
+  justify-content: center;
+ justify-items: left;
+  background-image: url("../Assets/register-bg-light.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  font-family: 'Dosis', sans-serif;
+  background-size:contain;
+  padding: 50px;
+  animation-name: slidein;
+  animation-duration: 1s;
+
+
+  
+}
+h1{
+  flex-direction: column;
+  justify-content: flex-end;
+  margin-top: 1 px;
+}
+h2{
+  margin-top: 0%;
+}
+label{
+  font: 1em sans-serif;
+  font-size: 20px;
+}
+input{
+    background-color: whitesmoke;
+    text-align: left;
+    font-family: 'Dosis', sans-serif;
+    text-decoration: black;
+    border-radius: 10px;
+
+}
+
+
+.topnav-createprofile{
+    width: 100%;
+
+  display: flex;
+  justify-content: space-evenly;
+  background-color: rgb(110,236,100);
+  font-family: 'Dosis', sans-serif;
+  font-size: 20px;
+  padding: 20px;
+  margin-left: -10px;
+  margin-top: -10px;
+}
+.btn{
+  padding: 10px;
+  background-color:#3fc208 ;
+  border-radius: 100px;
+  
+  border: 2px rgb(0, 0, 0)  ;
+  font-family: 'Dosis', sans-serif;
+  font-weight: bolder;
+  font-size: 20px;
+  width: 300px;
+  margin-top: 10px;
+}
+</style>
+
+=====Old Update =====
+<template>
+  <div>
+    <div class="topnav">
+      <router-link v-bind:to="'/'" id="nav-link">Login</router-link>
+      <router-link v-bind:to="'/contact'" id="nav-link">Contact</router-link>
+      <router-link v-bind:to="'/about'" id="nav-link">About Us</router-link>
+    </div>
+      <h3 class = "edit-title">Edit User Profile Information</h3>
+      <div >
+      <form v-on:submit.prevent='updateUserProfile'  class = "update-profile-form">
+          <!-- ID: {{currentUser.user_id}} -->
+          <img :src = "this.currentUser.fileData" class = "user-profile-pic"/>
+            <div class = "form-vert-stack">
+            
+
+        <input
+          type="text"
+          v-model="currentUser.currentWeight"
+          placeholder="Current Weight:"
+          class="update-item"
+        />
+
+        <input
+          type="text"
+          v-model="currentUser.desiredWeight"
+          placeholder="Desired Weight:"
+          class="update-item"
+        />
+
+        <input
+          type="text"
+          v-model="currentUser.birthday"
+          placeholder="yyyy-mm-dd"
+          class="update-item"
+        />
+
+             <div id="display_image">
+          <input
+            type="file"
+            id="image_input"
+            title=" "
+            accept="image/png, image/jpg"
+            v-on:submit.prevent="UpdatePicture"
+            class="update-item"
+          />
+          <button v-on:click.prevent="UpdatePicture">Select Picture</button>
+        </div>
+        <button type="submit">Submit Changes</button>
+          </div>
+      </form>
+    </div>
+    <div></div>
+  </div>
+</template>
+
+<script>
+import serverService from "../services/ServerService.js";
+// import axios from 'axios';
+export default {
+  created() {
+    const idPassed = this.$route.params.id;
+    serverService.getProfile(idPassed).then((response) => {
+      this.currentUser = response.data;
+    });
+    console.log(serverService.getProfile(idPassed));
+  },
+  data() {
+    return {
+      currentUser: {
+        firstName: "",
+        lastName: "",
+        age: "",
+        birthday: [],
+        height: "",
+        currentWeight: "",
+        desiredWeight: "",
+        displayName: "",
+        calorieGoal: "",
+        mealsPerDay: "",
+        fileData: "",
+      },
+    };
+  },
+  methods: {
+    updateUserProfile() {
+      serverService
+        .updateUserProfile(this.currentUser)
+        .then(() => {
+          window.alert("Hip, hip horray! An update has occured today!");
+           this.$router.push({name: 'home'})
+        })
+        .catch((error) => {
+          if (error.response) {
+            window.alert("An error has occurred. Please try again.");
+          }
+        });
+ 
+    },
+    selectPictureFile() {
+      document.getElementById("image_input").click();
+    },
+    UpdatePicture() {
+          window.cloudinary.setCloudName("dnaht9yyh");
+
+      var widget = new window.cloudinary.createUploadWidget(
+        {
+          cloudName: "dnaht9yyh",
+          uploadPreset: "ml_default",
+        },
+        (error, result) => {
+          if (!error) {
+            if (result.event === 'queues-end') {
+                console.log(result.data.info);
+
+              // console.log(result.data.info.files[0].uploadInfo.url)
+              this.currentUser.fileData = result.data.info.files[0].uploadInfo.url;
+            }
+           
+          }
+        }
+      );
+      widget.open();
+    },
+  },
+};
+</script>
+
+<style scoped>
+
+
+
+
+#nav-link{
+  font-weight: bold;
+  color: black;
+}
+
+.topnav{
+  width: 100%;
+  position: fixed;
+  display: flex;
+  justify-content: space-evenly;
+  text-align: center;
+  align-items: center;
+  background-color: rgb(110,236,100);
+  font-family: 'Dosis', sans-serif;
+  font-size: 20px;
+  padding: 20px;
+  margin-left: -10px;
+  margin-top: -20px;
+  background-size: contain;
+  text-decoration: bold;
+
+}
+
+.edit-title{
+  text-align: center;
+
+}
+
+#image_input{
+  
+
+  justify-content: center;
+  text-align: center;
+  /* padding-left: 20%; */
+  color: rgba(0, 0, 0, 0);
+  display: none;
+}
+
+.update-item{
+  margin-left: 5%;
+  padding: 10px;
+  background-color: transparent;
+  outline: none;
+  text-align: center;
+  justify-content: center;
+  border-width: 0px;
+  font-size: 15px;
+}
+
+.user-profile-pic{
+  width: 15%;
+  justify-content: center;
+  margin-left: 5%;
+  border-radius: 50%;
+  border:5px solid #055825;
+  margin-left: 20%;
+  margin-bottom: 20%;
+}
+
+.form-vert-stack{
+  display: flex;
+  flex-direction: column;
+  
+  width: 50%;
+  height: 50%;
+  background-repeat: no-repeat;
+  background-position: center;
+  margin-right: 20%;
+}
+
+.update-profile-form{
+ 
+  background-image: url("../Assets/bg-2-horizontal.png");
+  width: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size:contain;
+  padding-top: 10%;
+  margin-top: 10%;
+  flex-grow: 2;
+  justify-content: space-evenly;
+  display: flex;
+
+}
+</style>
+
+=====Old Homee====
+<template>
+  <div class="home" id="home-general">
+    <video autoplay loop src="./food2.mp4" id = "bg-video"></video>
+
+     <div class="topnav-login">
+      <router-link v-bind:to="'/login'" id="nav-link">Login</router-link>
+      <router-link v-bind:to="'/register'" id="nav-link">Register</router-link>
+      <router-link v-bind:to="'/aboutUs'" id="nav-link">About Us</router-link>
+    </div>
+
+    <h1>Welcome to the NutriBud</h1>
+
+    <div id = "center-blocking">
+      <div id = "center-information">
+    
+    
+    <h2> Heres some information about the NutriBud: </h2>
+    <p> A descriptive paragraph is a focused and detail-rich account of a specific topic. Paragraphs in this style often have a concrete focus—the sound of a waterfall,
+       the stench of a skunk's spray—but can also convey something abstract, such as an emotion or a memory. Some descriptive paragraphs do both.</p>
+    
+
+    </div>
+    </div>
+
+
+
+
+
+    
+  </div>
+</template>
+
+<script>
+export default {
+  name: "home"
+};
+</script>
+<style scoped>
+#bg-video{
+  z-index: -200;
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  min-width: 100%;
+  min-height: 100%;
+}
+
+
+.topnav-login{
+  width: 100%;
+
+  display: flex;
+  justify-content: space-evenly;
+  background-color: rgb(110,236,100);
+  font-family: 'Dosis', sans-serif;
+  font-size: 20px;
+  padding: 20px;
+  margin-left: -10px;
+  margin-top: -10px;
+}
+#nav-link{
+  color: black;
+  font-weight: bold;
+}
+p{
+  margin-right: 99px;
+}
+h1{
+  font-size: 50px;
+  margin-bottom: 1px;
+  margin-top: 5;
+  color: rgb(110,236,100);
+  text-align: center;
+
+}
+h2{
+  font-size: 30px;
+  
+}
+
+#center-information{
+  display: flex;
+  flex-direction: column;
+  justify-content: right;
+  width: 50%;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  margin-right: 20%;
+  margin-left: 17%;
+  
+}
+
+#center-blocking{
+ background-image: url("../Assets/bg-2-horizontal.png");
+ background-size: 900px 450px;
+  width: 100%;
+  height: 450px;
+  background-repeat:no-repeat;
+  background-position: center;
+  justify-content: center;
+  display: flex;
+  padding-top: 60px;
+  
+
+}
+
+
+</style>
